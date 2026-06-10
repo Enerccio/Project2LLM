@@ -12,7 +12,7 @@ Compressing any folder into a text file.
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        
+        <projectService serviceImplementation="com.github.enerccio.project2llm.processor.FolderProcessorManager" />
     </extensions>
     
     <projectListeners>
