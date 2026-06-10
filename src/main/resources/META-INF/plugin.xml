@@ -1,0 +1,22 @@
+<idea-plugin>
+    <id>com.github.enerccio.project2llm</id>
+
+    <name>Project2LLM</name>
+
+    <vendor url="https://github.com/Enerccio">Enerccio</vendor>
+
+    <description><![CDATA[
+Compressing any folder into a text file.
+]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        
+    </extensions>
+    
+    <projectListeners>
+        <listener class="com.github.enerccio.project2llm.ProjectTreeBinderListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener" />
+    </projectListeners>
+
+</idea-plugin>
