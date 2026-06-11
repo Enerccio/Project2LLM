@@ -179,14 +179,14 @@ public class FolderProcessor {
                 context.put("file", fileData.getFileName());
                 context.put("type", fileData.getMimeType());
                 context.put("description", fileData.getDescription());
-                context.put("fileSizeMb", fileData.getFileSize() / (1024 * 1024));
+                context.put("fileSizeMb", String.format(Locale.US, "%.2f", fileData.getFileSize() / (1024.0 * 1024.0)));
                 velocityEngine.evaluate(context, writer, "Project2LLM_BinaryFile", this.context.getBinaryFile());
             } else if (fileData.getFileSize() > this.context.getMaxFileSize()) {
                 VelocityContext context = new VelocityContext();
                 context.put("file", fileData.getFileName());
                 context.put("type", fileData.getMimeType());
-                context.put("fileSizeMb", fileData.getFileSize() / (1024 * 1024));
-                context.put("maxFileSize", this.context.getMaxFileSize() / (1024 * 1024));
+                context.put("fileSizeMb", String.format(Locale.US, "%.2f", fileData.getFileSize() / (1024.0 * 1024.0)));
+                context.put("maxFileSize", String.format(Locale.US, "%.2f", this.context.getMaxFileSize() / (1024.0 * 1024.0)));
                 velocityEngine.evaluate(context, writer, "Project2LLM_SourceTooLarge", this.context.getSourceTooLargeTemplate());
             } else {
                 VelocityContext context = new VelocityContext();
@@ -228,7 +228,7 @@ public class FolderProcessor {
         }
         metaContext.put("detectedEcosystem", ecosystem);
         metaContext.put("fileCount", files);
-        metaContext.put("totalSizeKb", bytes / (1024));
+        metaContext.put("totalSizeKb", String.format(Locale.US, "%.2f", bytes / (102.04)));
         metaContext.put("hasModuleRoots", hasModulesIncluded);
         if (hasModulesIncluded) {
             List<ModuleInfo> modules = new ArrayList<>();
