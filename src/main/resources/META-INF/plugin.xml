@@ -6,13 +6,32 @@
     <vendor url="https://github.com/Enerccio">Enerccio</vendor>
 
     <description><![CDATA[
-Compressing any folder into a text file.
-]]></description>
+    <h3>Seamless Codebase Packaging for Large Language Models</h3>
+    <p><b>Project2LLM</b> is an elegant developer tool designed to bridge the gap between your IntelliJ project directory and your LLM chatbot windows. No more copying files one-by-one or running complex external shell scripts to share code context.</p>
+
+    <h4>Key Features:</h4>
+    <ul>
+        <li><b>Zero-friction Drag & Drop</b>: Select files, folders, or entire modules in the Project View tree and drop them directly into external apps (ChatGPT, Claude, Gemini, Slack, etc.) to instantly bundle them into a single, beautifully structured text document.</li>
+        <li><b>Smart Drag Detection</b>: Keeps internal file moves and refactoring within IntelliJ completely normal, only triggering context generation when dragging files outside the IDE.</li>
+        <li><b>Velocity Template Customization</b>: Take full control over how your files are presented to LLMs. Customize metadata headers, directory tree formats, source code wraps, and more.</li>
+        <li><b>App & Project Settings Profiles</b>: Create multiple formatting profiles. Save them globally across your IDE or lock specific configurations directly to individual projects.</li>
+        <li><b>Oversized & Binary Safe-Guards</b>: Custom stubs replace binary assets and overly large text documents (exceeding configurable thresholds) to protect your LLM token budget.</li>
+        <li><b>Robust .aiignore Support</b>: Use simple glob patterns inside custom <code>.aiignore</code> files to skip dependencies, build caches, and sensitive keys.</li>
+    </ul>
+    ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="com.github.enerccio.project2llm.processor.FolderProcessorManager" />
+        <applicationService serviceImplementation="com.github.enerccio.project2llm.settings.AppSettings" />
+        <projectService serviceImplementation="com.github.enerccio.project2llm.settings.ProjectSettings" />
+        <applicationConfigurable parentId="tools" instance="com.github.enerccio.project2llm.settings.AppSettingsConfigurable"
+                                 id="com.github.enerccio.project2llm.settings.AppSettingsConfigurable"
+                                 displayName="Project2LLM Settings" />
+        <projectConfigurable parentId="tools" instance="com.github.enerccio.project2llm.settings.ProjectSettingsConfigurable"
+                             id="com.github.enerccio.project2llm.settings.ProjectSettingsConfigurable"
+                             displayName="Project2LLM Project Settings" />
     </extensions>
     
     <projectListeners>
