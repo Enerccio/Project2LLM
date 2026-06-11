@@ -5,6 +5,7 @@ import com.intellij.ide.dnd.TransferableWrapper;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.tree.TreeNode;
@@ -37,7 +38,7 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
     }
 
     @Override
-    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+    public @NotNull Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (flavor.equals(DataFlavor.javaFileListFlavor)) {
 
             // 1. If it's an internal drop target, let IntelliJ do its normal work!
