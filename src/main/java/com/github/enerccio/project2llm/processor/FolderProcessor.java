@@ -1,6 +1,7 @@
 package com.github.enerccio.project2llm.processor;
 
 import com.intellij.openapi.application.ApplicationNamesInfo;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -21,6 +22,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class FolderProcessor {
+    private static final Logger LOG = Logger.getInstance(FolderProcessor.class);
 
     private final Project project;
     private final List<File> sourceFiles;
@@ -55,7 +57,7 @@ public class FolderProcessor {
         try {
             return exportFolderContents();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Error exporting folder contents", e);
             return null;
         }
     }
@@ -277,7 +279,9 @@ public class FolderProcessor {
                 Pattern p = compileGlobToRegex(trimmed);
                 patterns.add(p);
             }
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            LOG.warn("Failed to load .aiignore patterns from " + file.getPath(), e);
+        }
         return patterns;
     }
 

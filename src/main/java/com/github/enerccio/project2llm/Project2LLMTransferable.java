@@ -2,6 +2,7 @@ package com.github.enerccio.project2llm;
 
 import com.github.enerccio.project2llm.processor.FolderProcessorManager;
 import com.intellij.ide.dnd.TransferableWrapper;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.util.List;
 
 public class Project2LLMTransferable implements Transferable, TransferableWrapper {
+    private static final Logger LOG = Logger.getInstance(Project2LLMTransferable.class);
+
     private final Project project;
     private final Object attachedObject;
 
@@ -81,7 +84,7 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
             if (sourceFiles == null || sourceFiles.isEmpty()) return null;
             return FolderProcessorManager.getInstance(project).createFolderContext(project, sourceFiles);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Failed to create folder context text representation", e);
             return null;
         }
     }

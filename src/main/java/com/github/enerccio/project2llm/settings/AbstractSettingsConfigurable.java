@@ -1,8 +1,10 @@
 package com.github.enerccio.project2llm.settings;
 
 import com.github.enerccio.ide.MyMessageBundle;
+import com.github.enerccio.project2llm.processor.FolderProcessor;
 import com.github.enerccio.project2llm.processor.FolderProcessorManager;
 import com.github.enerccio.project2llm.processor.ProcessorContext;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractSettingsConfigurable implements Configurable {
+    private static final Logger LOG = Logger.getInstance(FolderProcessor.class);
 
     protected JPanel mainPanel;
     protected ComboBox<String> profileComboBox;

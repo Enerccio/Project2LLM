@@ -1,10 +1,8 @@
-<idea-plugin>
+<idea-plugin require-restart="false">
     <id>com.github.enerccio.project2llm</id>
-
     <name>Project2LLM</name>
-
     <vendor url="https://github.com/Enerccio">Enerccio</vendor>
-
+    <version>1.0.0.</version>
     <description><![CDATA[
     <h3>Seamless Codebase Packaging for Large Language Models</h3>
     <p><b>Project2LLM</b> is an elegant developer tool designed to bridge the gap between your IntelliJ project directory and your LLM chatbot windows. No more copying files one-by-one or running complex external shell scripts to share code context.</p>
