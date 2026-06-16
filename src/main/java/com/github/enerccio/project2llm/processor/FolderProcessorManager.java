@@ -3,6 +3,7 @@ package com.github.enerccio.project2llm.processor;
 import com.github.enerccio.project2llm.settings.AppSettings;
 import com.github.enerccio.project2llm.settings.ProjectSettings;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import org.apache.velocity.app.VelocityEngine;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.util.List;
 
 public class FolderProcessorManager {
+    private static final Logger LOG = Logger.getInstance(FolderProcessorManager.class);
 
     private volatile ProcessorContext context;
     private final VelocityEngine velocityEngine;
@@ -26,6 +28,7 @@ public class FolderProcessorManager {
     }
 
     public File createFolderContext(Project project, List<File> sourceFiles) {
+        LOG.info("Creating folder context for " + sourceFiles.size() + " files");
         return ApplicationManager.getApplication().runReadAction((Computable<File>) () -> new FolderProcessor(project, sourceFiles, getContext(project), velocityEngine).process());
     }
 

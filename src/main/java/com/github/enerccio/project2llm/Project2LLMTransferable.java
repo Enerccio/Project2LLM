@@ -15,10 +15,12 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Project2LLMTransferable implements Transferable, TransferableWrapper {
     private static final Logger LOG = Logger.getInstance(Project2LLMTransferable.class);
 
+    private final AtomicInteger callCounter = new AtomicInteger(0);
     private final Project project;
     private final Object attachedObject;
 
@@ -40,36 +42,21 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
     @Override
     public @NotNull Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (flavor.equals(DataFlavor.javaFileListFlavor)) {
+            int currentCall = callCounter.incrementAndGet();
+            LOG.info("getTransferData called. Processing invocation #" + currentCall);
 
-            // 1. If it's an internal drop target, let IntelliJ do its normal work!
-            if (isInternalDrop()) {
+            if (currentCall > 1) {
+                LOG.info("Subsequent local invocation detected. Returning original files to internal consumer.");
                 return extractOriginalFiles();
             }
 
-            // 2. Otherwise, it's an external drop—compile the repo2txt payload
             File tempFile = createTextRepresentation();
-            if (tempFile != null) return List.of(tempFile);
+            if (tempFile != null) {
+                LOG.info("Folder context text representation created successfully. Returning to internal consumer.");
+                return List.of(tempFile);
+            }
         }
         throw new UnsupportedFlavorException(flavor);
-    }
-
-    private boolean isInternalDrop() {
-        // Check 1: External apps request data on native system peer threads, not the Swing EDT
-        if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
-            return false;
-        }
-
-        // Check 2: Verify if the mouse pointer is physically inside any open IntelliJ window bounds
-        try {
-            java.awt.Point mouseLoc = java.awt.MouseInfo.getPointerInfo().getLocation();
-            for (java.awt.Window window : java.awt.Window.getWindows()) {
-                if (window.isShowing() && window.getBounds().contains(mouseLoc)) {
-                    return true; // Mouse is over an IDE frame during data retrieval
-                }
-            }
-        } catch (Exception ignored) {}
-
-        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -83,6 +70,9 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
             }
 
             if (sourceFiles == null || sourceFiles.isEmpty()) return null;
+
+            LOG.info("Creating folder context text representation for " + sourceFiles.size() + " files");
+            LOG.debug("Files: " + sourceFiles);
             return FolderProcessorManager.getInstance(project).createFolderContext(project, sourceFiles);
         } catch (Exception e) {
             LOG.error("Failed to create folder context text representation", e);
