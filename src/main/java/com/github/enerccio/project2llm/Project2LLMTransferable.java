@@ -3,6 +3,7 @@ package com.github.enerccio.project2llm;
 import com.github.enerccio.project2llm.processor.FolderProcessorManager;
 import com.intellij.ide.dnd.TransferableWrapper;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
@@ -15,12 +16,13 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Project2LLMTransferable implements Transferable, TransferableWrapper {
     private static final Logger LOG = Logger.getInstance(Project2LLMTransferable.class);
 
-    private final AtomicInteger callCounter = new AtomicInteger(0);
+    private final AtomicInteger macCallCounter = new AtomicInteger(0);
     private final Project project;
     private final Object attachedObject;
 
@@ -42,11 +44,18 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
     @Override
     public @NotNull Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (flavor.equals(DataFlavor.javaFileListFlavor)) {
-            int currentCall = callCounter.incrementAndGet();
-            LOG.info("getTransferData called. Processing invocation #" + currentCall);
+            LOG.info("getTransferData called.");
 
-            if (currentCall > 1) {
-                LOG.info("Subsequent local invocation detected. Returning original files to internal consumer.");
+            if (isInternalDrop()) {
+                LOG.info("Internal drop");
+                return extractOriginalFiles();
+            }
+
+            if (DumbService.getInstance(project).isDumb()) {
+                LOG.info("Index building in progress (Dumb Mode). Skipping LLM context generation to prevent UI stall.");
+
+                // Returning null here forces getTransferData to skip the LLM text file conversion
+                // and safely fall back to returning the original files/folders instead!
                 return extractOriginalFiles();
             }
 
@@ -57,6 +66,61 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
             }
         }
         throw new UnsupportedFlavorException(flavor);
+    }
+
+    private boolean isInternalDrop() {
+        // 1. macOS Handling: Use the invocation counter gate
+        if (com.intellij.openapi.util.SystemInfo.isMac) {
+            int currentCall = macCallCounter.incrementAndGet();
+            return currentCall > 1;
+        }
+
+        // 2. Standard Event Dispatch Thread Handling (Windows & Linux X11)
+        // If we are directly on the UI thread, we can safely use local stack checking.
+        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+            StackTraceElement[] localStack = Thread.currentThread().getStackTrace();
+            for (StackTraceElement element : localStack) {
+                String methodName = element.getMethodName().toLowerCase();
+                if (element.getClassName().contains("DropTarget") || methodName.contains("drop")) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 3. Linux Wayland Handling
+        // We are on a background thread. Only perform the heavy cross-thread inspection
+        // if we are definitively running on Linux under a Wayland session.
+        boolean isLinux = com.intellij.openapi.util.SystemInfo.isLinux;
+        boolean isWayland = "wayland".equalsIgnoreCase(System.getenv("XDG_SESSION_TYPE"));
+
+        if (isLinux && isWayland) {
+            try {
+                // Target only the AWT EventQueue thread to minimize loop overhead
+                for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+                    Thread thread = entry.getKey();
+
+                    if (thread.getName().contains("AWT-EventQueue")) {
+                        for (StackTraceElement element : entry.getValue()) {
+                            String className = element.getClassName();
+                            String methodName = element.getMethodName().toLowerCase();
+
+                            if (className.contains("DropTarget") ||
+                                    methodName.contains("drop") ||
+                                    className.contains("fileEditor") ||
+                                    (className.contains("com.intellij.ide.dnd") && !methodName.contains("startdrag"))) {
+                                LOG.info("Wayland Guard: Internal drop caught via main thread cross-examination.");
+                                return true;
+                            }
+                        }
+                        break; // Found the EDT, no need to keep scanning other threads
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // Default fallback (External drop destination)
+        return false;
     }
 
     @SuppressWarnings("unchecked")
