@@ -30,6 +30,7 @@
         <projectConfigurable parentId="tools" instance="com.github.enerccio.project2llm.settings.ProjectSettingsConfigurable"
                              id="com.github.enerccio.project2llm.settings.ProjectSettingsConfigurable"
                              displayName="Project2LLM Project Settings" />
+        <notificationGroup id="Project2LLM Notifications" displayType="BALLOON"/>
     </extensions>
     
     <projectListeners>

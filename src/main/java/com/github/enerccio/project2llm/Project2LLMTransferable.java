@@ -2,6 +2,8 @@ package com.github.enerccio.project2llm;
 
 import com.github.enerccio.project2llm.processor.FolderProcessorManager;
 import com.intellij.ide.dnd.TransferableWrapper;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -53,6 +55,16 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
 
             if (DumbService.getInstance(project).isDumb()) {
                 LOG.info("Index building in progress (Dumb Mode). Skipping LLM context generation to prevent UI stall.");
+
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    NotificationGroupManager.getInstance()
+                            .getNotificationGroup("Project2LLM Notifications")
+                            .createNotification(
+                                    "Project indexing is active. Transferred original repository files.",
+                                    com.intellij.notification.NotificationType.WARNING
+                            )
+                            .notify(project);
+                });
 
                 // Returning null here forces getTransferData to skip the LLM text file conversion
                 // and safely fall back to returning the original files/folders instead!
