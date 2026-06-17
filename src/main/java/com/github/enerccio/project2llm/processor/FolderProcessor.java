@@ -12,6 +12,9 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.knuddels.jtokkit.Encodings;
+import com.knuddels.jtokkit.api.EncodingRegistry;
+import com.knuddels.jtokkit.api.ModelType;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
@@ -23,6 +26,7 @@ import java.util.regex.Pattern;
 
 public class FolderProcessor {
     private static final Logger LOG = Logger.getInstance(FolderProcessor.class);
+    private static EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
 
     private final Project project;
     private final List<File> sourceFiles;
@@ -36,6 +40,7 @@ public class FolderProcessor {
     private int files;
     private long bytes;
     private boolean isProjectRootIncluded;
+    private int tokenCount;
     private VirtualFile projectRoot;
     private List<VirtualFile> moduleRoots;
     private boolean hasModulesIncluded;
@@ -53,7 +58,7 @@ public class FolderProcessor {
         this.velocityEngine = velocityEngine;
     }
 
-    public File process() {
+    public PayloadDescriptor process() {
         try {
             return exportFolderContents();
         } catch (Exception e) {
@@ -62,7 +67,7 @@ public class FolderProcessor {
         }
     }
 
-    private File exportFolderContents() throws Exception {
+    private PayloadDescriptor exportFolderContents() throws Exception {
         projectRoot = ProjectUtil.guessProjectDir(project);
         fileTypeManager = FileTypeManager.getInstance();
         fileIndex = ProjectFileIndex.getInstance(project);
@@ -86,7 +91,7 @@ public class FolderProcessor {
                     isProjectRootIncluded = true;
                 }
                 for (VirtualFile mf : moduleRoots) {
-                    if (mf.equals(vf)) {
+                    if (mf != null && mf.equals(vf)) {
                         hasModulesIncluded = true;
                         includedModules.add(vf2module.get(mf));
                     }
@@ -103,7 +108,7 @@ public class FolderProcessor {
 
         saveContent();
 
-        return tempFile;
+        return new PayloadDescriptor(tempFile, files, bytes, tokenCount);
     }
 
     private void loadContent(VirtualFile file) throws Exception {
@@ -219,6 +224,9 @@ public class FolderProcessor {
         String targetContext = isProjectRootIncluded ? "PROJECT ROOT FOLDER" : "SUB-DIRECTORY SELECTION";
         String ecosystem = detectProjectEcosystem(projectRoot);
 
+        this.tokenCount = registry.getEncodingForModel(context.getModelType() == null ? ModelType.GPT_3_5_TURBO
+                : context.getModelType()).countTokens(treeBuilder.toString() + contentBuilder.toString());
+
         VelocityContext metaContext = new VelocityContext();
         metaContext.put("product", product);
         metaContext.put("projectName", project.getName());
@@ -229,6 +237,7 @@ public class FolderProcessor {
         metaContext.put("detectedEcosystem", ecosystem);
         metaContext.put("fileCount", files);
         metaContext.put("totalSizeKb", String.format(Locale.US, "%.2f", bytes / (102.04)));
+        metaContext.put("tokenCount", tokenCount);
         metaContext.put("hasModuleRoots", hasModulesIncluded);
         if (hasModulesIncluded) {
             List<ModuleInfo> modules = new ArrayList<>();

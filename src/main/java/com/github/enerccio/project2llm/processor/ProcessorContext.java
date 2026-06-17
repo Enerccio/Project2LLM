@@ -1,7 +1,10 @@
 package com.github.enerccio.project2llm.processor;
 
+import com.knuddels.jtokkit.api.ModelType;
+
 public class ProcessorContext {
 
+    private ModelType modelType = ModelType.GPT_4O;
     private String suffix = ".txt";
     private long maxFileSize = 2 * 1024 * 1024;
     private String treeBranch = "├── ";
@@ -38,7 +41,7 @@ Module Name: ${m.name}
 Module Root: ${m.moduleRoot}
 #end
 #end
-Payload Summary:    ${fileCount} files packed | ${totalSizeKb} KB total size
+Payload Summary:    ${fileCount} files packed | ${totalSizeKb} KB total size | ${tokenCount} tokens
 ========================================================================
 """;
 
@@ -185,5 +188,13 @@ have been replaced with this stub to preserve your attention context limits.]
 
     public void setTreeTemplate(String treeTemplate) {
         this.treeTemplate = treeTemplate;
+    }
+
+    public ModelType getModelType() {
+        return modelType;
+    }
+
+    public void setModelType(ModelType modelType) {
+        this.modelType = modelType;
     }
 }

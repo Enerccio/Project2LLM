@@ -17,6 +17,8 @@ dependencies {
         testFramework(TestFrameworkType.Platform)
 
     }
+
+    implementation("com.knuddels:jtokkit:1.1.0")
 }
 
 intellijPlatformTesting {

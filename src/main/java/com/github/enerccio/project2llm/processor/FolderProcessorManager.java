@@ -27,9 +27,9 @@ public class FolderProcessorManager {
         return project.getService(FolderProcessorManager.class);
     }
 
-    public File createFolderContext(Project project, List<File> sourceFiles) {
+    public PayloadDescriptor createFolderContext(Project project, List<File> sourceFiles) {
         LOG.info("Creating folder context for " + sourceFiles.size() + " files");
-        return ApplicationManager.getApplication().runReadAction((Computable<File>) () -> new FolderProcessor(project, sourceFiles, getContext(project), velocityEngine).process());
+        return ApplicationManager.getApplication().runReadAction((Computable<PayloadDescriptor>) () -> new FolderProcessor(project, sourceFiles, getContext(project), velocityEngine).process());
     }
 
     private synchronized ProcessorContext getContext(Project project) {

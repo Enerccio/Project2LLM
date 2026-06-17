@@ -32,6 +32,19 @@
                              displayName="Project2LLM Project Settings" />
         <notificationGroup id="Project2LLM Notifications" displayType="BALLOON"/>
     </extensions>
+
+    <actions>
+        <action id="com.github.enerccio.project2llm.actions.CopyPayloadAction"
+                class="com.github.enerccio.project2llm.actions.CopyPayloadAction"
+                text="Copy as Payload for LLM"
+                description="Packages the selected files and directories into a structured context text payload directly to the clipboard">
+
+            <add-to-group group-id="CutCopyPasteGroup"
+                          anchor="last" />
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="control alt shift C"/>
+        </action>
+    </actions>
     
     <projectListeners>
         <listener class="com.github.enerccio.project2llm.ProjectTreeBinderListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener" />

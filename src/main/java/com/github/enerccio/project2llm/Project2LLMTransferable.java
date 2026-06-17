@@ -1,6 +1,7 @@
 package com.github.enerccio.project2llm;
 
 import com.github.enerccio.project2llm.processor.FolderProcessorManager;
+import com.github.enerccio.project2llm.processor.PayloadDescriptor;
 import com.intellij.ide.dnd.TransferableWrapper;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.openapi.application.ApplicationManager;
@@ -125,13 +126,12 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
                                 return true;
                             }
                         }
-                        break; // Found the EDT, no need to keep scanning other threads
+                        break;
                     }
                 }
             } catch (Exception ignored) {}
         }
 
-        // Default fallback (External drop destination)
         return false;
     }
 
@@ -149,7 +149,10 @@ public class Project2LLMTransferable implements Transferable, TransferableWrappe
 
             LOG.info("Creating folder context text representation for " + sourceFiles.size() + " files");
             LOG.debug("Files: " + sourceFiles);
-            return FolderProcessorManager.getInstance(project).createFolderContext(project, sourceFiles);
+            PayloadDescriptor descriptor =
+                    FolderProcessorManager.getInstance(project).createFolderContext(project, sourceFiles);
+
+            return descriptor != null ? descriptor.tempFile() : null;
         } catch (Exception e) {
             LOG.error("Failed to create folder context text representation", e);
             return null;

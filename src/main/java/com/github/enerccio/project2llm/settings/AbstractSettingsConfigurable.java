@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
+import com.knuddels.jtokkit.api.ModelType;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -31,6 +32,7 @@ public abstract class AbstractSettingsConfigurable implements Configurable {
     protected JButton deleteBtn;
 
     // Fields of ProcessorContext
+    protected ComboBox<ModelType> modelTypeComboBox;
     protected JBTextField suffixField;
     protected JBTextField maxFileSizeField;
     protected JBTextField treeBranchField;
@@ -77,6 +79,7 @@ public abstract class AbstractSettingsConfigurable implements Configurable {
         copyBtn = new JButton(MyMessageBundle.message("settings.copy"));
         deleteBtn = new JButton(MyMessageBundle.message("settings.delete"));
 
+        modelTypeComboBox = new ComboBox<>(ModelType.values());
         suffixField = new JBTextField();
         maxFileSizeField = new JBTextField();
         treeBranchField = new JBTextField();
@@ -152,7 +155,7 @@ public abstract class AbstractSettingsConfigurable implements Configurable {
         // Templates dialog actions
         topHeaderBtn.addActionListener(e -> openTemplateDialog("Top Header Template", "topHeaderTemplate", List.of()));
         metaInfoBtn.addActionListener(e -> openTemplateDialog("Metadata Template", "metaInfoTemplate",
-                List.of("${product}", "${projectName}", "${targetContext}", "${sdk}", "${detectedEcosystem}", "${fileCount}", "${totalSizeKb}", "${hasModuleRoots}", "${modules}")));
+                List.of("${product}", "${projectName}", "${targetContext}", "${sdk}", "${detectedEcosystem}", "${fileCount}", "${totalSizeKb}", "${tokenCount}", "${hasModuleRoots}", "${modules}")));
         treeTemplateBtn.addActionListener(e -> openTemplateDialog("Tree Structure Template", "treeTemplate", List.of("${tree}")));
         sourceFileBtn.addActionListener(e -> openTemplateDialog("Source File Template", "sourceFileTemplate",
                 List.of("${file}", "${type}", "${content}", "${lineCount}", "${extension}")));
@@ -170,6 +173,7 @@ public abstract class AbstractSettingsConfigurable implements Configurable {
         mainPanel = FormBuilder.createFormBuilder()
                 .addLabeledComponent(new JBLabel(MyMessageBundle.message("settings.active.profile")), profilePanel)
                 .addSeparator()
+                .addLabeledComponent(MyMessageBundle.message("settings.model.type"), modelTypeComboBox)
                 .addLabeledComponent(MyMessageBundle.message("settings.file.suffix"), suffixField)
                 .addLabeledComponent(MyMessageBundle.message("settings.max.file.size"), maxFileSizeField)
                 .addLabeledComponent(MyMessageBundle.message("settings.tree.branch"), treeBranchField)
@@ -227,6 +231,7 @@ public abstract class AbstractSettingsConfigurable implements Configurable {
         ProcessorContext context = localProfiles.get(profileName);
         if (context == null) return;
 
+        modelTypeComboBox.setSelectedItem(context.getModelType());
         suffixField.setText(context.getSuffix());
         maxFileSizeField.setText(String.valueOf(context.getMaxFileSize()));
         treeBranchField.setText(context.getTreeBranch());
@@ -241,6 +246,7 @@ public abstract class AbstractSettingsConfigurable implements Configurable {
         ProcessorContext context = localProfiles.get(profileName);
         if (context == null) return;
 
+        context.setModelType((ModelType) modelTypeComboBox.getSelectedItem());
         context.setSuffix(suffixField.getText());
         try {
             context.setMaxFileSize(Long.parseLong(maxFileSizeField.getText()));
@@ -294,6 +300,7 @@ public abstract class AbstractSettingsConfigurable implements Configurable {
 
     protected ProcessorContext cloneContext(ProcessorContext src) {
         ProcessorContext clone = new ProcessorContext();
+        clone.setModelType(src.getModelType());
         clone.setSuffix(src.getSuffix());
         clone.setMaxFileSize(src.getMaxFileSize());
         clone.setTreeBranch(src.getTreeBranch());
@@ -311,7 +318,8 @@ public abstract class AbstractSettingsConfigurable implements Configurable {
     }
 
     protected boolean areContextsEqual(ProcessorContext c1, ProcessorContext c2) {
-        return c1.getSuffix().equals(c2.getSuffix()) &&
+        return c1.getModelType() == c2.getModelType() &&
+                c1.getSuffix().equals(c2.getSuffix()) &&
                 c1.getMaxFileSize() == c2.getMaxFileSize() &&
                 c1.getTreeBranch().equals(c2.getTreeBranch()) &&
                 c1.getTreeLeaf().equals(c2.getTreeLeaf()) &&
