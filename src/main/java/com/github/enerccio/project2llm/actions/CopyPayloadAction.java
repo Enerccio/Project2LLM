@@ -13,6 +13,7 @@ import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -82,7 +83,8 @@ public class CopyPayloadAction extends AnAction {
     @Override
     public void update(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        e.getPresentation().setEnabledAndVisible(project != null);
+        e.getPresentation().setVisible(project != null);
+        e.getPresentation().setEnabled(project != null && !DumbService.getInstance(project).isDumb());
     }
 
     @Override
